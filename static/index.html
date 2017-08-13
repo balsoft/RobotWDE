@@ -278,7 +278,7 @@
         }
         var currentCommand = ""
 
-        
+
 
         function saveLocal() {
             for (i in files) {
@@ -354,6 +354,7 @@
             req.open("GET", "/programs", true)
             req.onreadystatechange = () => {
                 if (req.readyState == 4) {
+                    console.log(files)
                     files = JSON.parse(req.response)
                     init()
                 }
@@ -366,6 +367,10 @@
 
 
         function runFile(file) {
+            if (!connected) {
+                log("No connection")
+                return
+            }
             currentCommand = "run"
             $(".toolbar a").click()
             $('#run').html("stop")
@@ -392,6 +397,10 @@
 
 
         function saveFile(file) {
+            if (!connected) {
+                log("No connection")
+                return
+            }
             var body = {
                 filename: files[file].name,
                 content: editors[file].doc.getValue()
