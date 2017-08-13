@@ -1,0 +1,23 @@
+{
+  "name": "RobotWDE",
+  "version": "1.3.10",
+  "description": "Web Development environment for python.",
+  "main": "main.js",
+  "files": [
+    "."
+  ],
+  "keywords": [
+    "tester"
+  ],
+  "author": "balsoft",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "codemirror": "^5.28.0",
+    "express": "^4.15.4",
+    "express-ws": "^3.0.0",
+    "jquery": "^3.2.1",
+    "material-design-icons": "^3.0.1",
+    "materialize-css": "0.100.1"
+  }
+}
