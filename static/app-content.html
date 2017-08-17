@@ -1,0 +1,69 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/app-layout/app-layout.html">
+<link rel="import" href="/bower_components/juicy-ace-editor/juicy-ace-editor.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="/bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="/bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="/bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
+<dom-module>
+    <template>
+        <app-header fixed medium-tall>
+            <app-toolbar>
+                <paper-icon-button icon="menu" onclick="drawer.open()"></paper-icon-button>
+                <div main-title>My app</div>
+            </app-toolbar>
+            <app-toolbar>
+                <paper-tabs id="tabs" selected="selected">
+                    <template is="dom-repeat" items="{{files}}">
+                        <paper-tab>
+                            {{item.name}}
+                        </paper-tab>
+                    </template>
+                </paper-tabs>
+            </app-toolbar>
+        </app-header>
+        <app-drawer id="drawer">
+            Drawer
+        </app-drawer>
+        <iron-pages>
+            <iron-page>
+                <juicy-ace-editor fontsize="15px" mode="ace/mode/python"></juicy-ace-editor>
+            </iron-page>
+            <iron-page>
+                asd
+            </iron-page>
+        </iron-pages>
+    </template>
+    <script>
+        class RobotWDE extends Polymer.Element {
+            static get is() {
+                return "app-content";
+            }
+
+            // set this element's employees property
+            constructor() {
+                super();
+                this.employees = [{
+                        first: 'Bob',
+                        last: 'Li'
+                    },
+                    {
+                        first: 'Ayesha',
+                        last: 'Johnson'
+                    },
+                    {
+                        first: 'Fatma',
+                        last: 'Kumari'
+                    },
+                    {
+                        first: 'Tony',
+                        last: 'Morelli'
+                    }
+                ];
+            }
+        }
+        customElements.define(EmployeeList.is, EmployeeList);
+    </script>
+</dom-module>

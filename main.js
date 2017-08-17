@@ -7,18 +7,6 @@ var expressWs = require("express-ws")(app)
 
 global.config = JSON.parse(fs.readFileSync("./config.json"))
 
-function asyncForEach(arr, iterator, callback) {
-    var queue = arr.slice(0);
-    var outarr = []
-
-    function next(err, output) {
-        if (output) outarr[outarr.length] = output
-        if (err) return callback(err, outarr);
-        if (queue.length === 0) return callback(null, outarr);
-        iterator(queue.shift(), next);
-    }
-    next();
-}
 
 app.use(bodyParser.json())
 
@@ -190,25 +178,8 @@ app.post("/programs/*", (req, res) => {
 
 app.get("/programs", (req, res) => {
     fs.readdir("./programs", (err, files) => {
-        if (!err) {
-            res.writeHead(200, {
-                "Content-Type": "application/json"
-            })
-            asyncForEach(files, (el, next) => {
-                fs.stat("./programs/" + el, (err, stat) => {
-                    fs.readFile("./programs/" + el, {}, (err, data) => {
-                        next(null, {
-                            name: el,
-                            atime: stat.atimeMs,
-                            size: stat.size,
-                            data: data.toString()
-                        })
-                    })
-                })
-            }, (err, output) => {
-                res.end(JSON.stringify(output))
-            })
-        }
+        res.writeHead(200)
+        res.end(JSON.stringify(files))
     })
 })
 

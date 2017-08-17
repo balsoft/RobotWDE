@@ -1,0 +1,146 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="/bower_components/app-layout/app-layout.html">
+<link rel="import" href="/bower_components/juicy-ace-editor/juicy-ace-editor.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="/bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="/bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="/bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
+<link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<dom-module id="robot-wde">
+
+    <template>
+        <custom-style>
+            <style>
+                robot-wde,
+                html {
+                    margin: 0;
+                    font-family: 'Roboto', 'Noto', sans-serif;
+                    -webkit-font-smoothing: antialiased;
+                    background: #f1f1f1;
+                }
+
+                app-toolbar {
+                    background-color: #4285f4;
+                    color: #fff;
+                }
+
+                paper-icon-button {
+                    --paper-icon-button-ink-color: white;
+                }
+
+                app-header {
+                    @apply --layout-fixed-top;
+                    color: #fff;
+                    --app-header-background-rear-layer: {
+                        background-color: #ef6c00;
+                    }
+                    ;
+                }
+
+                app-drawer {
+                    --app-drawer-scrim-background: rgba(0, 0, 100, 0.8);
+                    --app-drawer-content-container: {
+                        background-color: #B0BEC5;
+                    }
+                }
+
+                iron-pages {
+                    padding-top: 64px;
+                    height: calc(100% - 64px);
+                }
+
+                iron-page {
+                    margin: 0;
+                }
+
+                juicy-ace-editor {
+                    height: 100%;
+                    margin: 0px;
+                }
+            </style>
+        </custom-style>
+        <paper-dialog id="filechooser">
+            <h2>Header</h2>
+            <paper-dialog-scrollable>
+                Lorem ipsum...
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm autofocus>Accept</paper-button>
+            </div>
+        </paper-dialog>
+        <app-header fixed medium-tall>
+            <app-toolbar>
+                <div main-title>RobotWDE</div>
+                <paper-tabs id="tabs" selected="{{selected}}" autoselect noink>
+                    <template is="dom-repeat" items="{{tabs}}">
+                        <style is="custom-style">
+                            paper-tab {
+                                margin: 0;
+                                font-family: 'Roboto', 'Noto', sans-serif;
+                                -webkit-font-smoothing: antialiased;
+                            }
+                        </style>
+                        <paper-tab>
+                            {{item.name}}
+                            <paper-icon-button icon="close" on-click="closeTab"></paper-icon-button>
+                        </paper-tab>
+                    </template>
+                    <paper-icon-button icon="add" onclick="filechooser.open()"></paper-icon-button>
+                </paper-tabs>
+            </app-toolbar>
+        </app-header>
+        <iron-pages selected="{{selected}}">
+            <template is="dom-repeat" items="{{tabs}}">
+                <iron-page>
+                    <juicy-ace-editor fontsize="15px" mode="ace/mode/python">{{item.data}}</juicy-ace-editor>
+                </iron-page>
+            </template>
+        </iron-pages>
+
+    </template>
+    <script>
+        class RobotWDE extends Polymer.Element {
+            static get is() {
+                return "robot-wde";
+            }
+
+            static get properties() {
+                return {
+                    tabs: {
+                        type: String
+                    }
+                }
+            }
+
+            constructor() {
+                super()
+                if (localStorage.getItem('tabs'))
+                    this.tabs = JSON.parse(localStorage.getItem('tabs'))
+                else
+                    this.tabs = [{
+                        name: "file.py",
+                        data: "Это файл-заглушка."
+                    }]
+                fetch("/programs").then((value) => {
+                    return value.json()
+                }).then((value) => {
+                    this.files = value
+                })
+                this.selected = 0
+                var _this = this
+                setInterval(() => {
+                    localStorage.setItem('tabs', JSON.stringify(_this.tabs))
+                }, 10000)
+            }
+            closeTab(e) {
+                this.splice("tabs", e.model.__data.index, 1)
+            }
+
+        }
+        customElements.define(RobotWDE.is, RobotWDE);
+    </script>
+</dom-module>
