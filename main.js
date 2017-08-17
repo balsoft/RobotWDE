@@ -215,9 +215,11 @@ app.delete('/programs/*', (req, res) => {
     })
 })
 
-app.get('/status', (req, res) => {
-    res.writeHead(200)
-    res.end()
+app.ws('/status', (ws, req) => {
+    ws.on("message", (msg)=>{
+        ws.send("Ok")
+        ws.close()
+    })
 })
 
 

@@ -4,5 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-fib	../programs/test.py	/^def fib(n):$/;"	kind:function	line:1
+foo.py	../programs/foo.py	1;"	kind:file	line:1
+hello_world	../programs/test.py	/^def hello_world():$/;"	kind:function	line:1
+name	../programs/foo.py	/^name = input()$/;"	kind:variable	line:2
 test.py	../programs/test.py	1;"	kind:file	line:1
