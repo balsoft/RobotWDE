@@ -190,6 +190,17 @@
             Materialize.toast(msg, 5000, 'snack')
         }
 
+        function asyncForeach(array, func, ready) {
+            if (!array.length) {
+                ready();
+                return
+            }
+            var that = this;
+            func(array[0], function () {
+                that.asyncForeach(array.slice(1, array.length), func, ready);
+            });
+        }
+
 
         function checkForNetwork() {
             var connection = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/status")
@@ -405,12 +416,23 @@
         } else {
             fetch('/programs').then((response) => {
                 if (response.ok) {
-                    response.json().then((value) => {
-                        files = value
-                        console.log(files)
-                        init()
-                    })
+                    return response.json()
                 }
+            }).then((value) => {
+                asyncForeach(value, (el, done) => {
+                    fetch("/programs/" + el).then((data) => {
+                        return data.text()
+                    }).catch(() => {}).then((data) => {
+                        files.push({
+                            name: el,
+                            data: data
+                        })
+                        done()
+                        return
+                    }).catch(() => {})
+                }, () => {
+                    init()
+                })
             })
         }
 

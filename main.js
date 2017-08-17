@@ -27,11 +27,11 @@ app.use("/codemirror", express.static("./node_modules/codemirror/", {
     maxAge: year
 }))
 
-app.use(express.static("./programs/", {
+app.use("/programs",express.static("./programs/", {
     index: "false"
 }))
 
-app.use(express.static("./bower_components/", {
+app.use("/bower_components",express.static("./bower_components/", {
     maxAge: year
 }))
 

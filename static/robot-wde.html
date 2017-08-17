@@ -9,6 +9,9 @@
 <link rel="import" href="/bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="/bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/bower_components/paper-item/paper-item.html">
 <dom-module id="robot-wde">
 
     <template>
@@ -62,14 +65,28 @@
                 }
             </style>
         </custom-style>
-        <paper-dialog id="filechooser">
-            <h2>Header</h2>
+
+        <paper-dialog id="filechooser" modal>
+            <h2>Выберите файл</h2>
             <paper-dialog-scrollable>
-                Lorem ipsum...
+                <div role="listbox">
+                    <template is="dom-repeat" items="{{files}}">
+                        <style>
+                            paper-item {
+                                cursor: pointer;
+                                border-top: 1px solid lightgrey;
+                                margin: 5px;
+                            }
+                        </style>
+                        <paper-item on-click="openFile">
+                            <iron-icon icon="code"></iron-icon>
+                            {{item}}
+                        </paper-item>
+                    </template>
+                </div>
             </paper-dialog-scrollable>
             <div class="buttons">
-                <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button dialog-confirm autofocus>Accept</paper-button>
+                <paper-button dialog-dismiss>Отмена</paper-button>
             </div>
         </paper-dialog>
         <app-header fixed medium-tall>
@@ -89,7 +106,7 @@
                             <paper-icon-button icon="close" on-click="closeTab"></paper-icon-button>
                         </paper-tab>
                     </template>
-                    <paper-icon-button icon="add" onclick="filechooser.open()"></paper-icon-button>
+                    <paper-icon-button icon="add" on-click="addTab"></paper-icon-button>
                 </paper-tabs>
             </app-toolbar>
         </app-header>
@@ -110,10 +127,13 @@
 
             static get properties() {
                 return {
-                    tabs: {
-                        type: String
-                    }
+                    tabs: {},
+                    files: {}
                 }
+            }
+
+            saveLocal() {
+                localStorage.setItem("tabs", JSON.stringify(this.tabs))
             }
 
             constructor() {
@@ -133,13 +153,27 @@
                 this.selected = 0
                 var _this = this
                 setInterval(() => {
-                    localStorage.setItem('tabs', JSON.stringify(_this.tabs))
+                    this.saveLocal()
                 }, 10000)
+            }
+            addTab(e) {
+                this.shadowRoot.getElementById('filechooser').open()
             }
             closeTab(e) {
                 this.splice("tabs", e.model.__data.index, 1)
             }
-
+            openFile(e) {
+                fetch("/programs/" + e.model.__data.item).then((value) => {
+                    return value.text()
+                }).then((value) => {
+                    this.push("tabs", {
+                        name: e.model.__data.item,
+                        data: value
+                    })
+                    this.shadowRoot.getElementById('filechooser').close()
+                    this.saveLocal()
+                })
+            }
         }
         customElements.define(RobotWDE.is, RobotWDE);
     </script>
