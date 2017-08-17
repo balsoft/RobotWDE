@@ -11,7 +11,8 @@
 <link rel="import" href="/bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="/bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="/bower_components/paper-button/paper-button.html">
-<link rel="import" href="/bower_components/paper-item/paper-item.html">
+<link rel="import" href="/bower_components/paper-item/all-imports.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
 <dom-module id="robot-wde">
 
     <template>
@@ -66,24 +67,40 @@
             </style>
         </custom-style>
 
+        <paper-dialog id="filename">
+            <h3>Выберите название файла</h3>
+            <paper-input label="Имя файла" value="{{newFileName}}">
+            </paper-input>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Отмена</paper-button>
+                <paper-button dialog-confirm autofocus on-click="addTab">ОК</paper-button>
+            </div>
+        </paper-dialog>
         <paper-dialog id="filechooser" modal>
             <h2>Выберите файл</h2>
             <paper-dialog-scrollable>
-                <div role="listbox">
+                <paper-listbox>
                     <template is="dom-repeat" items="{{files}}">
                         <style>
-                            paper-item {
+                            paper-icon-item {
                                 cursor: pointer;
-                                border-top: 1px solid lightgrey;
-                                margin: 5px;
+                                min-width: 500px;
                             }
                         </style>
-                        <paper-item on-click="openFile">
-                            <iron-icon icon="code"></iron-icon>
-                            {{item}}
-                        </paper-item>
+                        <paper-icon-item on-click="openFile">
+                            <iron-icon icon="code" slot="item-icon"></iron-icon>
+                            <paper-item-body>
+                                <div>{{item}}</div>
+                            </paper-item-body>
+                        </paper-icon-item>
                     </template>
-                </div>
+                    <paper-icon-item on-click="createFile">
+                        <iron-icon icon="add" slot="item-icon"></iron-icon>
+                        <paper-item-body>
+                            <div>Создать файл</div>
+                        </paper-item-body>
+                    </paper-icon-item>
+                </paper-listbox>
             </paper-dialog-scrollable>
             <div class="buttons">
                 <paper-button dialog-dismiss>Отмена</paper-button>
@@ -106,14 +123,14 @@
                             <paper-icon-button icon="close" on-click="closeTab"></paper-icon-button>
                         </paper-tab>
                     </template>
-                    <paper-icon-button icon="add" on-click="addTab"></paper-icon-button>
+                    <paper-icon-button icon="add" on-click="openTab"></paper-icon-button>
                 </paper-tabs>
             </app-toolbar>
         </app-header>
         <iron-pages selected="{{selected}}">
             <template is="dom-repeat" items="{{tabs}}">
                 <iron-page>
-                    <juicy-ace-editor fontsize="15px" mode="ace/mode/python">{{item.data}}</juicy-ace-editor>
+                    <juicy-ace-editor on-editor-ready="configureEditor" fontsize="15px" mode="ace/mode/python">{{item.data}}</juicy-ace-editor>
                 </iron-page>
             </template>
         </iron-pages>
@@ -151,16 +168,48 @@
                     this.files = value
                 })
                 this.selected = 0
+                this.newFileName = ""
                 var _this = this
+                this.configureEditor = function (e) {
+                    e.detail.commands.addCommand({
+                        name: "save",
+                        bindKey: {
+                            win: "Ctrl-S",
+                            mac: "Command-S"
+                        },
+                        exec: function (editor) {
+                            fetch("./programs/" + _this.tabs[_this.selected].name, {
+                                method: "POST",
+                                headers: new Headers({
+                                    'Content-Type': 'text/plain'
+                                }),
+                                body: new Blob([editor.getValue()])
+                            }).then().catch()
+                        }
+                    });
+                }
                 setInterval(() => {
                     this.saveLocal()
                 }, 10000)
+
             }
             addTab(e) {
+
+                this.shadowRoot.getElementById('filechooser').close()
+                this.push("tabs", {
+                    name: this.newFileName,
+                    data: ""
+                })
+                this.set('selected', this.tabs.length - 1)
+                this.newFileName = ""
+                this.saveLocal()
+            }
+            openTab(e) {
                 this.shadowRoot.getElementById('filechooser').open()
             }
             closeTab(e) {
                 this.splice("tabs", e.model.__data.index, 1)
+                this.set('selected', this.tabs.length - 1)
             }
             openFile(e) {
                 fetch("/programs/" + e.model.__data.item).then((value) => {
@@ -170,10 +219,15 @@
                         name: e.model.__data.item,
                         data: value
                     })
+                    this.set('selected', this.tabs.length - 1)
                     this.shadowRoot.getElementById('filechooser').close()
                     this.saveLocal()
                 })
             }
+            createFile(e) {
+                this.shadowRoot.getElementById('filename').open()
+            }
+
         }
         customElements.define(RobotWDE.is, RobotWDE);
     </script>
