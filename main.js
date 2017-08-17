@@ -39,8 +39,12 @@ app.use("/codemirror", express.static("./node_modules/codemirror/", {
     maxAge: year
 }))
 
-app.use(express.static("./programs", {
+app.use(express.static("./programs/", {
     index: "false"
+}))
+
+app.use(express.static("./bower_components/", {
+    maxAge: year
 }))
 
 app.use("/", express.static("./static"))
@@ -216,7 +220,7 @@ app.delete('/programs/*', (req, res) => {
 })
 
 app.ws('/status', (ws, req) => {
-    ws.on("message", (msg)=>{
+    ws.on("message", (msg) => {
         ws.send("Ok")
         ws.close()
     })

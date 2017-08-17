@@ -1,5 +1,5 @@
 {
-  "name": "RobotWDE",
+  "name": "robot-wde",
   "version": "1.3.10",
   "description": "Web Development environment for python.",
   "main": "main.js",
