@@ -13,6 +13,10 @@
 <link rel="import" href="/bower_components/paper-button/paper-button.html">
 <link rel="import" href="/bower_components/paper-item/all-imports.html">
 <link rel="import" href="/bower_components/paper-input/paper-input.html">
+<link rel="import" href="/bower_components/neon-animation/web-animations.html">
+<link rel="import" href="/bower_components/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="/bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="/bower_components/paper-snackbar/paper-snackbar.html">
 <dom-module id="robot-wde">
 
     <template>
@@ -76,7 +80,7 @@
                 <paper-button dialog-confirm autofocus on-click="addTab">ОК</paper-button>
             </div>
         </paper-dialog>
-        <paper-dialog id="filechooser" modal>
+        <paper-dialog id="filechooser" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
             <h2>Выберите файл</h2>
             <paper-dialog-scrollable>
                 <paper-listbox>
@@ -87,12 +91,15 @@
                                 min-width: 500px;
                             }
                         </style>
-                        <paper-icon-item on-click="openFile">
+                        <paper-icon-item>
+
                             <iron-icon icon="code" slot="item-icon"></iron-icon>
-                            <paper-item-body>
+                            <paper-item-body on-click="openFile">
                                 <div>{{item}}</div>
                             </paper-item-body>
+                            <paper-icon-button icon="delete" on-click="deleteFile"></paper-icon-button>
                         </paper-icon-item>
+
                     </template>
                     <paper-icon-item on-click="createFile">
                         <iron-icon icon="add" slot="item-icon"></iron-icon>
@@ -109,6 +116,7 @@
         <app-header fixed medium-tall>
             <app-toolbar>
                 <div main-title>RobotWDE</div>
+                <paper-icon-button icon="av:play-arrow"></paper-icon-button>
                 <paper-tabs id="tabs" selected="{{selected}}" autoselect noink>
                     <template is="dom-repeat" items="{{tabs}}">
                         <style is="custom-style">
@@ -123,8 +131,8 @@
                             <paper-icon-button icon="close" on-click="closeTab"></paper-icon-button>
                         </paper-tab>
                     </template>
-                    <paper-icon-button icon="add" on-click="openTab"></paper-icon-button>
                 </paper-tabs>
+                <paper-icon-button icon="folder-open" on-click="openTab"></paper-icon-button>
             </app-toolbar>
         </app-header>
         <iron-pages selected="{{selected}}">
@@ -134,7 +142,7 @@
                 </iron-page>
             </template>
         </iron-pages>
-
+        <paper-snackbar></paper-snackbar>
     </template>
     <script>
         class RobotWDE extends Polymer.Element {
@@ -184,7 +192,30 @@
                                     'Content-Type': 'text/plain'
                                 }),
                                 body: new Blob([editor.getValue()])
-                            }).then().catch()
+                            }).then((value) => {
+                                if (value.ok) _this.snack("Файл сохранен")
+                                else _this.snack("Ошибка сохранения файла")
+                            }).catch(() => {
+                                _this.snack("Ошибка сохранения файла")
+                            })
+                        }
+                    });
+                    e.detail.commands.addCommand({
+                        name: "run",
+                        bindKey: {
+                            win: "Ctrl-F5",
+                            mac: "Command-F5"
+                        },
+                        exec: function (editor) {
+                            var connection = new WebSocket("ws://" + window.location.host +
+                                "/run")
+                            connection.onmessage = (msg) => {
+                                
+                            }
+                            connection.onopen = () => {
+
+                            }
+
                         }
                     });
                 }
@@ -193,9 +224,19 @@
                 }, 10000)
 
             }
+            snack(obj) {
+                if (typeof obj == "string") obj = {
+                    message: obj
+                }
+                document.dispatchEvent(new CustomEvent('paper-snackbar-notify', {
+                    bubbles: true,
+                    composed: true,
+                    detail: obj
+                }));
+            }
             addTab(e) {
 
-                this.shadowRoot.getElementById('filechooser').close()
+                this.$.filechooser.close()
                 this.push("tabs", {
                     name: this.newFileName,
                     data: ""
@@ -205,7 +246,7 @@
                 this.saveLocal()
             }
             openTab(e) {
-                this.shadowRoot.getElementById('filechooser').open()
+                this.$.filechooser.open()
             }
             closeTab(e) {
                 this.splice("tabs", e.model.__data.index, 1)
@@ -226,6 +267,12 @@
             }
             createFile(e) {
                 this.shadowRoot.getElementById('filename').open()
+            }
+            deleteFile(e) {
+                fetch("/programs/" + e.model.__data.item, {
+                    method: "DELETE"
+                }).then().catch()
+                this.splice("files", e.model.__data.index, 1)
             }
 
         }
